@@ -654,6 +654,165 @@
             0% { transform: scale(1) rotate(0deg); opacity: 1; }
             100% { transform: scale(0.7) rotate(3deg); opacity: 0; }
         }
+
+        /* --- 3x3 九宮格響應式與放大 --- */
+        body.hub-view-large .container {
+            max-width: 960px;
+        }
+
+        @media (min-width: 520px) {
+            .quiz-hub-list {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 18px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .quiz-hub-list {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 18px;
+            }
+        }
+
+        /* 徽章與排名樣式 */
+        .quiz-select-card {
+            position: relative;
+            overflow: visible;
+        }
+
+        .rank-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            font-size: 11px;
+            font-weight: 900;
+            padding: 4px 10px;
+            border-radius: 99px;
+            box-shadow: 0 4px 10px rgba(217, 119, 6, 0.3);
+            border: 2px solid white;
+            z-index: 10;
+            transform: rotate(5deg);
+        }
+
+        .rank-badge.rank-1 {
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            font-size: 12px;
+            padding: 5px 12px;
+        }
+        .rank-badge.rank-2 {
+            background: linear-gradient(135deg, #94a3b8 0%, #475569 100%);
+        }
+        .rank-badge.rank-3 {
+            background: linear-gradient(135deg, #b45309 0%, #78350f 100%);
+        }
+
+        .hot-label {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 6px;
+            margin-left: 6px;
+            vertical-align: middle;
+            text-transform: uppercase;
+        }
+        .hot-label.god { background-color: #fee2e2; color: #ef4444; }
+        .hot-label.glass { background-color: #dbeafe; color: #1d4ed8; }
+        .hot-label.fight { background-color: #fef3c7; color: #d97706; }
+
+        /* 點讚列樣式 */
+        .vote-bar {
+            display: flex;
+            gap: 12px;
+            margin-top: auto;
+            border-top: 1.5px dashed var(--card-border);
+            padding-top: 14px;
+            user-select: none;
+        }
+
+        .vote-btn {
+            background: #f8fafc;
+            border: 2px solid var(--card-border);
+            padding: 6px 12px;
+            border-radius: 14px;
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: var(--bounce-transition);
+            box-shadow: 0 3px 0 var(--card-border);
+        }
+
+        .vote-btn:hover {
+            transform: scale(1.1) rotate(2deg);
+            background: #ffffff;
+            border-color: var(--text-main);
+            box-shadow: 0 3px 0 var(--text-main);
+        }
+
+        .vote-btn:active {
+            transform: scale(0.9);
+            box-shadow: 0 1px 0 var(--text-main);
+        }
+
+        .vote-btn.active-up {
+            background-color: #fee2e2;
+            border-color: #f43f5e;
+            color: #e11d48;
+            box-shadow: 0 3px 0 #f43f5e;
+        }
+
+        .vote-btn.active-down {
+            background-color: #e0f2fe;
+            border-color: #0ea5e9;
+            color: #0284c7;
+            box-shadow: 0 3px 0 #0ea5e9;
+        }
+
+        /* 籌備中卡片特別處理 */
+        .card-coming-soon {
+            opacity: 0.85;
+            background: rgba(255, 255, 255, 0.6);
+            border-style: dashed;
+        }
+        .card-coming-soon:hover {
+            transform: translateY(-8px) rotate(1.5deg) scale(1.02) !important;
+            box-shadow: 0 16px 0 var(--card-border) !important;
+        }
+
+        /* Toast 樣式 */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(15, 23, 42, 0.9);
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-size: 13.5px;
+            font-weight: 800;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.35);
+            pointer-events: none;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -769,6 +928,9 @@
         </div>
 
     </div>
+
+    <!-- Toast 訊息通知元件 -->
+    <div id="toast" class="toast"></div>
 
     <script>
         // ================= 測驗資料庫 =================
@@ -1013,6 +1175,54 @@
                         avoid: "明天再說耶穌"
                     }
                 }
+            },
+            "chat": {
+                id: "chat",
+                badge: "💬 社交焦慮",
+                badgeClass: "badge-split",
+                title: "已讀不回「心裡小劇場」鑑定",
+                desc: "你被已讀會焦慮？回一句話要改五次？一分鐘診斷你靈魂深處的社交焦慮與防衛模式！",
+                comingSoon: true
+            },
+            "love": {
+                id: "love",
+                badge: "⛵ 感情解毒",
+                badgeClass: "badge-monster",
+                title: "當代「暈船與清醒判官」大解析",
+                desc: "一邊意念自我攻略，一邊過度清醒當愛情判官？快來看看你的暈船指數與防禦力！",
+                comingSoon: true
+            },
+            "art": {
+                id: "art",
+                badge: "🧠 發瘋美學",
+                badgeClass: "badge-split",
+                title: "現代人「發瘋行為藝術」大賞",
+                desc: "驚嘆號狂熱者？深夜emo虛無詩人？測測你壓力爆表時的特色發瘋流派！",
+                comingSoon: true
+            },
+            "fish": {
+                id: "fish",
+                badge: "🐟 避事求生",
+                badgeClass: "badge-deity",
+                title: "當代「摸魚神仙」圖鑑",
+                desc: "薪水小偷？帶薪拉屎大仙？測出你最擅長的摸魚避事流派，為你的怠惰幽默背書！",
+                comingSoon: true
+            },
+            "rich": {
+                id: "rich",
+                badge: "💰 消費自嘲",
+                badgeClass: "badge-deity",
+                title: "當代「理財刺客與精緻窮」鑑定",
+                desc: "大錢買不起，小錢花不停？不看帳戶就假裝自己很有錢？來測測你的理財防禦率！",
+                comingSoon: true
+            },
+            "health": {
+                id: "health",
+                badge: "💊 矛盾養生",
+                badgeClass: "badge-monster",
+                title: "當代「朋克養生」仙人圖鑑",
+                desc: "用最貴的眼霜熬最晚的夜？可樂配護肝片？測測你如何在揮揮與養生間瘋狂拉扯！",
+                comingSoon: true
             }
         };
 
@@ -1096,23 +1306,166 @@
         });
 
         // ================= 路由與大廳渲染 =================
+        let votes = {};
+
+        async function fetchVotes() {
+            try {
+                const res = await fetch('/api/votes');
+                if (res.ok) {
+                    votes = await res.json();
+                } else {
+                    votes = getFallbackVotes();
+                }
+            } catch (e) {
+                votes = getFallbackVotes();
+            }
+            renderQuizHub();
+        }
+
+        function getFallbackVotes() {
+            return {
+                "monster": { up: 512, down: 24 },
+                "split-self": { up: 432, down: 45 },
+                "deity": { up: 388, down: 18 },
+                "chat": { up: 120, down: 10 },
+                "love": { up: 280, down: 15 },
+                "art": { up: 95, down: 8 },
+                "fish": { up: 310, down: 12 },
+                "rich": { up: 240, down: 22 },
+                "health": { up: 185, down: 30 }
+            };
+        }
+
+        async function vote(quizId, type) {
+            const storageKey = `voted_${quizId}`;
+            const hasVoted = localStorage.getItem(storageKey);
+            if (hasVoted) {
+                showToast("⚠️ 您已經對此測驗表過態囉！");
+                return;
+            }
+
+            // 樂觀更新前端 UI
+            if (!votes[quizId]) votes[quizId] = { up: 0, down: 0 };
+            votes[quizId][type]++;
+            localStorage.setItem(storageKey, type);
+            renderQuizHub();
+
+            showToast(type === 'up' ? "👍 感謝點讚！您的加持已被接收！" : "👎 踩得好！我們會繼續毒舌發瘋！");
+
+            try {
+                const res = await fetch('/api/votes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quizId, type })
+                });
+                if (res.ok) {
+                    votes = await res.json();
+                    renderQuizHub();
+                }
+            } catch (e) {
+                // 網路出錯維持樂觀鎖狀態即可
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.innerText = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2200);
+            }
+        }
+
         function renderQuizHub() {
-            quizHubList.innerHTML = Object.values(quizzes).map(q => `
-                <div class="quiz-select-card" onclick="navigateToQuiz('${q.id}')">
-                    <span class="quiz-badge ${q.badgeClass}">${q.badge}</span>
-                    <h3>${q.title}</h3>
-                    <p>${q.desc}</p>
-                    <div class="play-btn">
-                        開始召喚 
-                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
-                        </svg>
+            if (Object.keys(votes).length === 0) {
+                votes = getFallbackVotes();
+            }
+
+            // 依讚數計算前三名
+            const sortedQuizzes = Object.keys(quizzes).map(id => ({
+                id,
+                up: votes[id]?.up || 0
+            })).sort((a, b) => b.up - a.up);
+
+            const top3 = sortedQuizzes.slice(0, 3).map(x => x.id);
+
+            quizHubList.innerHTML = Object.values(quizzes).map(q => {
+                const upVotes = votes[q.id]?.up || 0;
+                const downVotes = votes[q.id]?.down || 0;
+                
+                const userVote = localStorage.getItem(`voted_${q.id}`);
+                const activeUpClass = userVote === 'up' ? 'active-up' : '';
+                const activeDownClass = userVote === 'down' ? 'active-down' : '';
+
+                // 冠軍/亞軍/季軍標籤
+                let rankHtml = '';
+                if (top3.includes(q.id)) {
+                    const rankIdx = top3.indexOf(q.id) + 1;
+                    const rankEmoji = rankIdx === 1 ? '🥇 網民推爆' : rankIdx === 2 ? '🥈 人氣竄升' : '🥉 熱門推薦';
+                    rankHtml = `<span class="rank-badge rank-${rankIdx}">${rankEmoji}</span>`;
+                }
+
+                // 依讚踩比率產生的荒謬動態徽章
+                let hotLabelHtml = '';
+                if (upVotes > downVotes * 3 && upVotes > 50) {
+                    hotLabelHtml = `<span class="hot-label god">🙌 全體起立</span>`;
+                } else if (downVotes > upVotes && downVotes > 20) {
+                    hotLabelHtml = `<span class="hot-label glass">🤡 脆友破防</span>`;
+                } else if (upVotes > 20 && downVotes > 20 && Math.abs(upVotes - downVotes) / Math.max(upVotes, 1) < 0.2) {
+                    hotLabelHtml = `<span class="hot-label fight">⚔️ 兩極大戰</span>`;
+                }
+
+                const cardClass = q.comingSoon ? 'quiz-select-card card-coming-soon' : 'quiz-select-card';
+                const comingHtml = q.comingSoon ? `<span style="font-size:11px;color:var(--text-muted);font-weight:bold;">🔮 儀式籌備中...</span>` : '';
+
+                return `
+                    <div class="${cardClass}" onclick="navigateToQuiz('${q.id}')">
+                        ${rankHtml}
+                        <span class="quiz-badge ${q.badgeClass}">
+                            ${q.badge}
+                            ${comingHtml}
+                        </span>
+                        <h3>
+                            ${q.title}
+                            ${hotLabelHtml}
+                        </h3>
+                        <p>${q.desc}</p>
+                        
+                        ${!q.comingSoon ? `
+                        <div class="play-btn">
+                            開始召喚 
+                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                            </svg>
+                        </div>
+                        ` : `
+                        <div style="font-size: 13px; font-weight: 800; color: var(--text-muted); margin-top: auto; display: flex; align-items: center; gap: 4px;">
+                            即將上線
+                        </div>
+                        `}
+
+                        <!-- 讚踩互動列 -->
+                        <div class="vote-bar" onclick="event.stopPropagation();">
+                            <button class="vote-btn ${activeUpClass}" onclick="vote('${q.id}', 'up')">
+                                👍 <span class="vote-count" id="up-${q.id}">${upVotes}</span>
+                            </button>
+                            <button class="vote-btn ${activeDownClass}" onclick="vote('${q.id}', 'down')">
+                                👎 <span class="vote-count" id="down-${q.id}">${downVotes}</span>
+                            </button>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function navigateToQuiz(quizId) {
+            const q = quizzes[quizId];
+            if (q.comingSoon) {
+                showToast("🔮 靈魂儀式正在籌備中，敬請期待！");
+                return;
+            }
             window.location.hash = quizId;
         }
 
@@ -1132,11 +1485,14 @@
             viewResult.style.display = 'none';
 
             if (quizzes[hash]) {
+                document.body.classList.remove('hub-view-large');
                 activeQuiz = quizzes[hash];
                 showCover();
             } else {
+                document.body.classList.add('hub-view-large');
                 activeQuiz = null;
                 viewHub.style.display = 'block';
+                fetchVotes();
             }
         }
 
