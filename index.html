@@ -813,6 +813,144 @@
             transform: translateX(-50%) translateY(0);
             opacity: 1;
         }
+
+        /* Footer */
+        .quiz-footer {
+            margin: 40px auto 20px auto;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted, #94a3b8);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 20px;
+            max-width: 600px;
+        }
+        .quiz-footer a {
+            color: var(--primary, #818cf8);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border-bottom: 1px dashed rgba(129, 140, 248, 0.4);
+            padding-bottom: 2px;
+        }
+        .quiz-footer a:hover {
+            color: var(--secondary, #f472b6);
+            border-bottom-color: var(--secondary, #f472b6);
+            text-shadow: 0 0 8px rgba(244, 114, 182, 0.4);
+        }
+
+        /* Feedback Modal */
+        .feedback-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .feedback-modal.show {
+            display: flex;
+            opacity: 1;
+        }
+        .feedback-modal-content {
+            background: linear-gradient(135deg, #1e1b4b 0%, #0f0728 100%);
+            border: 1px solid rgba(129, 140, 248, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            padding: 24px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 450px;
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .feedback-modal.show .feedback-modal-content {
+            transform: scale(1);
+        }
+        .feedback-modal-close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            color: #94a3b8;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .feedback-modal-close:hover {
+            color: #ffffff;
+        }
+        .feedback-modal-content h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .form-input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 10px;
+            padding: 12px;
+            color: #ffffff;
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #818cf8;
+            box-shadow: 0 0 10px rgba(129, 140, 248, 0.3);
+        }
+        select.form-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='%2394a3b8' viewBox='0 0 24 24'><path d='M7 10l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
+        }
+        .feedback-submit-btn {
+            width: 100%;
+            background: linear-gradient(90deg, #818cf8, #f472b6);
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(129, 140, 248, 0.3);
+        }
+        .feedback-submit-btn:hover {
+            opacity: 0.95;
+            box-shadow: 0 4px 20px rgba(244, 114, 182, 0.5);
+            transform: translateY(-1px);
+        }
+        .feedback-submit-btn:active {
+            transform: translateY(1px);
+        }
     </style>
 </head>
 <body>
@@ -931,6 +1069,33 @@
 
     <!-- Toast 訊息通知元件 -->
     <div id="toast" class="toast"></div>
+
+    <!-- 頁尾 Feedback 區塊 -->
+    <footer class="quiz-footer">
+        <p>系統破防了？👉 <a href="#" id="btn-report-bug">回報 Bug</a> ｜ 腦袋有新梗？👉 <a href="#" id="btn-wish-theme">許願測驗主題</a></p>
+    </footer>
+
+    <!-- 反饋彈窗 Modal -->
+    <div id="feedbackModal" class="feedback-modal">
+        <div class="feedback-modal-content">
+            <span class="feedback-modal-close" id="closeFeedback">&times;</span>
+            <h2 id="feedbackTitle">💡 意見反饋與許願</h2>
+            <form id="feedbackForm">
+                <div class="form-group">
+                    <label for="feedbackType">類別</label>
+                    <select id="feedbackType" class="form-input">
+                        <option value="wish">🔮 許願測驗主題</option>
+                        <option value="bug">🐛 系統 Bug 回報</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="feedbackContent">內容 (限 200 字)</label>
+                    <textarea id="feedbackContent" class="form-input" rows="4" maxlength="200" placeholder="寫下你的想法..." required></textarea>
+                </div>
+                <button type="submit" class="feedback-submit-btn" id="btnSubmitFeedback">匿名送出</button>
+            </form>
+        </div>
+    </div>
 
     <script>
         // ================= 測驗資料庫 =================
@@ -1840,6 +2005,87 @@
         }
 
         platformHeader.addEventListener('click', goBackHub);
+
+        // ================= 反饋與許願彈窗控制 =================
+        const feedbackModal = document.getElementById('feedbackModal');
+        const btnReportBug = document.getElementById('btn-report-bug');
+        const btnWishTheme = document.getElementById('btn-wish-theme');
+        const closeFeedback = document.getElementById('closeFeedback');
+        const feedbackType = document.getElementById('feedbackType');
+        const feedbackForm = document.getElementById('feedbackForm');
+        const feedbackContent = document.getElementById('feedbackContent');
+        const btnSubmitFeedback = document.getElementById('btnSubmitFeedback');
+
+        function openModal(type) {
+            feedbackType.value = type;
+            feedbackContent.value = '';
+            feedbackModal.style.display = 'flex';
+            setTimeout(() => {
+                feedbackModal.classList.add('show');
+            }, 10);
+        }
+
+        function closeModal() {
+            feedbackModal.classList.remove('show');
+            setTimeout(() => {
+                feedbackModal.style.display = 'none';
+            }, 300);
+        }
+
+        btnReportBug.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModal('bug');
+        });
+
+        btnWishTheme.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModal('wish');
+        });
+
+        closeFeedback.addEventListener('click', closeModal);
+
+        feedbackModal.addEventListener('click', (e) => {
+            if (e.target === feedbackModal) {
+                closeModal();
+            }
+        });
+
+        feedbackForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const type = feedbackType.value;
+            const content = feedbackContent.value.trim();
+            
+            if (!content) return;
+            
+            btnSubmitFeedback.disabled = true;
+            btnSubmitFeedback.textContent = '傳送中...';
+            
+            try {
+                const response = await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ type, content })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showToast('🎉 收到！感謝你的匿名回報！');
+                    closeModal();
+                } else {
+                    showToast('❌ 傳送失敗：' + (data.error || '未知錯誤'));
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('❌ 網路異常，請稍後再試！');
+            } finally {
+                btnSubmitFeedback.disabled = false;
+                btnSubmitFeedback.textContent = '匿名送出';
+            }
+        });
 
         function handleRouting() {
             const hash = window.location.hash.substring(1);
