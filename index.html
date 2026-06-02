@@ -951,6 +951,39 @@
         .feedback-submit-btn:active {
             transform: translateY(1px);
         }
+        /* Language Switcher Button */
+        .lang-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+            z-index: 1000;
+        }
+        .lang-btn {
+            background: rgba(30, 27, 75, 0.4);
+            border: 1px solid rgba(129, 140, 248, 0.2);
+            color: #94a3b8;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .lang-btn:hover {
+            color: #ffffff;
+            border-color: rgba(244, 114, 182, 0.4);
+            box-shadow: 0 0 10px rgba(244, 114, 182, 0.2);
+        }
+        .lang-btn.active {
+            background: linear-gradient(90deg, #818cf8, #f472b6);
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 2px 10px rgba(129, 140, 248, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -966,11 +999,16 @@
     <div class="glow-circle glow-2"></div>
 
     <div class="container">
+        <!-- 語言切換按鈕 -->
+        <div class="lang-switcher">
+            <button class="lang-btn active" id="lang-btn-zh" onclick="switchLanguage('zh')">繁中</button>
+            <button class="lang-btn" id="lang-btn-en" onclick="switchLanguage('en')">EN</button>
+        </div>
         
         <!-- 平台 Logo -->
         <header id="platformHeader">
             <h1>Fun Quizzes 👾</h1>
-            <p>當代發瘋與靈魂狀態大解析</p>
+            <p id="platformSubtitle">當代發瘋與靈魂狀態大解析</p>
         </header>
 
         <!-- ================= 視圖 1：測驗選單 (Hub) ================= -->
@@ -981,7 +1019,7 @@
             
             <div class="adsense-slot">Sponsored Ad</div>
 
-            <p class="legal-notice">
+            <p class="legal-notice" id="hubLegalNotice">
                 本測驗純屬娛樂性質，不具備任何專業心理學或醫療診斷依據。我們嚴格保護您的隱私，100% 零個資收集，請放心體驗。
             </p>
         </div>
@@ -998,7 +1036,7 @@
                 <p class="cover-desc" id="coverDesc">測驗簡介描述。</p>
                 
                 <button class="btn" id="btnStartQuiz">開始召喚儀式 ✨</button>
-                <button class="btn-back-hub" onclick="goBackHub()">返回測驗大廳</button>
+                <button class="btn-back-hub" id="btnBackHub1" onclick="goBackHub()">返回測驗大廳</button>
             </div>
         </div>
 
@@ -1023,7 +1061,7 @@
 
         <!-- ================= 視圖 5：結果分析頁 ================= -->
         <div id="view-result" class="glass-card" style="display: none;">
-            <p class="result-title">您的測驗結果為</p>
+            <p class="result-title" id="resultTitle">您的測驗結果為</p>
             <h2 class="monster-name" id="resultName">檢測結果</h2>
             
             <!-- Canvas 雷達圖 -->
@@ -1037,11 +1075,11 @@
             <!-- 相性配對 -->
             <div class="matching-box">
                 <div class="match-card">
-                    <p class="match-type">🤝 合得來的夥伴</p>
+                    <p class="match-type" id="matchTypeFit">🤝 合得來的夥伴</p>
                     <p class="match-name fit" id="matchFit">-</p>
                 </div>
                 <div class="match-card">
-                    <p class="match-type">⚡ 需避開的宿敵</p>
+                    <p class="match-type" id="matchTypeAvoid">⚡ 需避開的宿敵</p>
                     <p class="match-name avoid" id="matchAvoid">-</p>
                 </div>
             </div>
@@ -1055,12 +1093,12 @@
                         <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
                     </svg>分享
                 </button>
-                <button class="btn-outline" onclick="goBackHub()">
+                <button class="btn-outline" id="btnBackHub2" onclick="goBackHub()">
                     返回大廳
                 </button>
             </div>
 
-            <p class="legal-notice" style="margin-top: 0;">
+            <p class="legal-notice" id="resultLegalNotice" style="margin-top: 0;">
                 測驗為純娛樂性質，複製成果即可至 Threads / IG 限動發文！
             </p>
         </div>
@@ -1099,7 +1137,8 @@
 
     <script>
         // ================= 測驗資料庫 =================
-        const quizzes = {
+        const allQuizzes = {
+            zh: {
     "monster": {
         id: "monster",
         badge: "🔥 爆紅主打",
@@ -1755,7 +1794,741 @@
             }
         }
     }
-};
+},
+            en: {
+    "monster": {
+        id: "monster",
+        badge: "🔥 Trending",
+        badgeClass: "badge-monster",
+        title: "Your Inner Overthinking Gremlin",
+        desc: "Can't wake up? Panicking at read-receipts? 1 minute to find the exact overthinking gremlin tearing your soul apart!",
+        loadingText: "Analyzing neural energy drainage...",
+        questions: [
+            {
+                question: "Alarm rings for the 3rd time, only 15 mins left before you MUST leave. What is your brain doing?",
+                options: [
+                    { text: "“I'm dead. The presentation is today, I'll ruin everything.”", weight: { pro: 3, over: 1, jelly: 0, slime: 0 } },
+                    { text: "“What sick leave excuse do I use today? Can't kill Grandma off again...”", weight: { pro: 1, over: 3, jelly: 0, slime: 0 } },
+                    { text: "“I'll just be late and take the pay cut. Salary is trash anyway.”", weight: { pro: 0, over: 0, jelly: 3, slime: 1 } },
+                    { text: "Soul has left the chat. Booting sequence failed.", weight: { pro: 0, over: 0, jelly: 1, slime: 3 } }
+                ]
+            },
+            {
+                question: "Sent a joke in group chat. 30 mins later, 'Read by 5' but zero replies. You:",
+                options: [
+                    { text: "“I messed up.” Scroll up 6 months of chat history to find my mistakes.", weight: { pro: 1, over: 3, jelly: 0, slime: 0 } },
+                    { text: "Spam cringe emojis to force-save the vibe, making it 10x worse.", weight: { pro: 3, over: 1, jelly: 0, slime: 0 } },
+                    { text: "Mentally format these 5 people out of my life. I only talk to cats now.", weight: { pro: 0, over: 0, jelly: 3, slime: 1 } },
+                    { text: "Didn't notice. Sent it and went straight to scrolling on Threads.", weight: { pro: 0, over: 0, jelly: 1, slime: 3 } }
+                ]
+            },
+            {
+                question: "Crucial project due tomorrow noon. Current progress is 0%. What are you doing?",
+                options: [
+                    { text: "Scrolling TikTok while mentally self-flagellating at maximum speed.", weight: { pro: 3, over: 1, jelly: 0, slime: 0 } },
+                    { text: "Suddenly feel my room is filthy. Start deep-cleaning my entire desk.", weight: { pro: 1, over: 3, jelly: 0, slime: 0 } },
+                    { text: "Accept my fate. Turn on Netflix and start binging.", weight: { pro: 0, over: 0, jelly: 3, slime: 1 } },
+                    { text: "Open ChatGPT. Ask random prompts, hoping AI carries my karma.", weight: { pro: 0, over: 0, jelly: 1, slime: 3 } }
+                ]
+            },
+            {
+                question: "10 mins before clock-out. Ready to go home and rot. Co-worker invites you to dinner. You:",
+                options: [
+                    { text: "“Socializing sounds exhausting, but will they hate me if I skip?”", weight: { pro: 1, over: 3, jelly: 0, slime: 0 } },
+                    { text: "Instantly fabricate a lie: “I think I left my stove on...”", weight: { pro: 0, over: 0, jelly: 3, slime: 1 } },
+                    { text: "Attend physically, but enter power-saving mode. Smile and nod.", weight: { pro: 0, over: 0, jelly: 1, slime: 3 } },
+                    { text: "Accept without thinking, get tipsy, act chaotic, regret it at 3 AM.", weight: { pro: 3, over: 1, jelly: 0, slime: 0 } }
+                ]
+            },
+            {
+                question: "Lights out, in bed, trying to sleep. What is your brain broadcasting?",
+                options: [
+                    { text: "A high-definition replay of a cringe presentation from 3rd grade.", weight: { pro: 1, over: 3, jelly: 0, slime: 0 } },
+                    { text: "Deep calculations on how I would spend 2 billion lottery winnings.", weight: { pro: 3, over: 1, jelly: 0, slime: 0 } },
+                    { text: "Absolute void. Just one brainrot meme song on 24/7 infinite loop.", weight: { pro: 0, over: 0, jelly: 1, slime: 3 } },
+                    { text: "The meaning of existence, cosmic boundaries, and why work starts at 9.", weight: { pro: 0, over: 0, jelly: 3, slime: 1 } }
+                ]
+            }
+        ],
+        results: {
+            pro: {
+                name: "The Deadline Sloth",
+                stats: { "Chaos": 75, "Defense": 99, "Imagination": 40, "Social": 30, "Slacker": 60 },
+                desc: "<p>You have cosmic levels of productivity when doing everything EXCEPT the task at hand. You only boot up in the absolute last second.</p><p>Calm on the outside, screaming and crying on the inside. Your best work is done under severe panic.</p>",
+                fit: "3 AM Overthinking Fish",
+                avoid: "Anti-Social Jellyfish"
+            },
+            over: {
+                name: "3 AM Overthinking Fish",
+                stats: { "Chaos": 85, "Defense": 40, "Imagination": 95, "Social": 50, "Slacker": 30 },
+                desc: "<p>You hold severe moral trials on yourself at 2:30 AM. The boundaries of the universe and cringe things you said years ago are your fuel.</p><p>Dead fish by day, deep philosopher by night. Your brain is a non-stop podcast of self-doubt.</p>",
+                fit: "Disconnected Slime",
+                avoid: "The Deadline Sloth"
+            },
+            jelly: {
+                name: "Anti-Social Jellyfish",
+                stats: { "Chaos": 60, "Defense": 50, "Imagination": 70, "Social": 95, "Slacker": 45 },
+                desc: "<p>Smiling on the outside saying “Haha it's fine!” while mentally formatting them out of your life. You only talk to cats now.</p><p>Your boundary is made of bulletproof glass. Nice to talk to, but nobody actually gets inside.</p>",
+                fit: "The Deadline Sloth",
+                avoid: "3 AM Overthinking Fish"
+            },
+            slime: {
+                name: "Disconnected Slime",
+                stats: { "Chaos": 40, "Defense": 65, "Imagination": 30, "Social": 80, "Slacker": 95 },
+                desc: "<p>Your body is at the office, but your soul is in power-saving mode, floating in deep space.</p><p>You excel at smiling, nodding, and saying “Fr? Fr?” using pure muscle memory while your brain is completely dead.</p>",
+                fit: "Anti-Social Jellyfish",
+                avoid: "3 AM Overthinking Fish"
+            }
+        }
+    },
+    "split-self": {
+        id: "split-self",
+        badge: "💬 Threads Addict",
+        badgeClass: "badge-split",
+        title: "Threads Dual Persona Map",
+        desc: "Quiet potato in real life, but a certified chaotic poster on Threads? Let's decode your split personality!",
+        loadingText: "Scanning internet brain damage levels...",
+        questions: [
+            {
+                question: "Suddenly called to speak in a large social meeting. You:",
+                options: [
+                    { text: "Shortness of breath. Squeeze a smile and use minimal words.", weight: { potato: 3, mime: 1, edge: 0 } },
+                    { text: "Brain is empty, but social script auto-runs. Speak perfect corporate BS.", weight: { potato: 1, mime: 3, edge: 0 } },
+                    { text: "Expressionless. Shake head coldly. Emit strong 'do not touch' aura.", weight: { potato: 0, mime: 0, edge: 3 } }
+                ]
+            },
+            {
+                question: "Opened Threads, what is your typical post?",
+                options: [
+                    { text: "Aggressive venting, unhinged dating complaints, or pure brain rot.", weight: { potato: 0, mime: 0, edge: 3 } },
+                    { text: "Random daily complaints, asking “Is anyone awake?”, hoping for replies.", weight: { potato: 3, mime: 1, edge: 0 } },
+                    { text: "Carefully curated aesthetic photos with deep, philosophical captions.", weight: { potato: 1, mime: 3, edge: 0 } }
+                ]
+            },
+            {
+                question: "Someone comments a disagreeing opinion under your post. You:",
+                options: [
+                    { text: "Write a 500-word essay to destroy their logic. Internet battle begins.", weight: { potato: 0, mime: 0, edge: 3 } },
+                    { text: "Feel anxious, delete the post, and close the App. “I hate humans.”", weight: { potato: 3, mime: 1, edge: 0 } },
+                    { text: "Reply with a passive-aggressive meme or just ignore it entirely.", weight: { potato: 1, mime: 3, edge: 0 } }
+                ]
+            },
+            {
+                question: "How do you feel after doomscrolling Threads for 2 hours?",
+                options: [
+                    { text: "“Why is everyone's life so dramatic? I'm going back to my cave.”", weight: { potato: 3, mime: 1, edge: 0 } },
+                    { text: "Entertained, but feel my attention span has shrunk to 3 seconds.", weight: { potato: 1, mime: 3, edge: 0 } },
+                    { text: "Felt inspired to write 5 more unhinged posts to get internet points.", weight: { potato: 0, mime: 0, edge: 3 } }
+                ]
+            }
+        ],
+        results: {
+            potato: {
+                name: "Lurking Potato / Vent Monster",
+                stats: { "Double Face": 95, "Lurk Power": 90, "Unhinged": 50, "Cringe Level": 30, "Keyboard DPS": 70 },
+                desc: "<p>Real life: Quiet potato who blushes when ordering food. Threads: Keyboard warrior who posts 30 unhinged vents a day.</p><p>You treat Threads as your digital trash can. Your friends would be horrified if they saw your account.</p>",
+                fit: "Corporate Clown",
+                avoid: "Edgy Philosopher"
+            },
+            mime: {
+                name: "Corporate Clown / Aesthetic Pretender",
+                stats: { "Double Face": 80, "Lurk Power": 40, "Unhinged": 60, "Cringe Level": 85, "Keyboard DPS": 45 },
+                desc: "<p>Real life: Polite, corporate-smiling professional. Threads: Curates an aesthetic, moody life that looks incredibly deep.</p><p>You care about your aesthetic ratio. You delete posts that don't get at least 10 likes in 5 minutes.</p>",
+                fit: "Lurking Potato",
+                avoid: "Edgy Philosopher"
+            },
+            edge: {
+                name: "Edgy Philosopher / Daily Crybaby",
+                stats: { "Double Face": 70, "Lurk Power": 30, "Unhinged": 99, "Cringe Level": 60, "Keyboard DPS": 95 },
+                desc: "<p>Real life: Face-paralyzed, cold loner. Threads: Spams chaotic rants, cries about life, and picks fights with strangers.</p><p>You are chronically online. Your brain has been rewired by algorithms. Go touch grass immediately.</p>",
+                fit: "Corporate Clown",
+                avoid: "Lurking Potato"
+            }
+        }
+    },
+    "deity": {
+        id: "deity",
+        badge: "🔮 Divine Guidance",
+        badgeClass: "badge-deity",
+        title: "Your Chaotic Patron Saint",
+        desc: "Even gods facepalm at your choices. Discover which chaotic deity is currently carrying your life!",
+        loadingText: "Summoning celestial entities...",
+        questions: [
+            {
+                question: "Bought a Gym membership. Visited exactly once. You tell yourself:",
+                options: [
+                    { text: "“By paying, I've already completed the spiritual upgrade.”", weight: { slacker: 3, panic: 0, drama: 0 } },
+                    { text: "“Oh my god, I wasted money. I am a failure.” (Anxiety kicks in)", weight: { slacker: 0, panic: 3, drama: 0 } },
+                    { text: "“I was injured by the heavy air there. It's a sign from the universe.”", weight: { slacker: 1, panic: 0, drama: 3 } }
+                ]
+            },
+            {
+                question: "Spilled hot coffee all over your white shirt before a meeting. Your reaction:",
+                options: [
+                    { text: "“Nice, a free tie-dye shirt. The universe is telling me to be creative.”", weight: { slacker: 3, panic: 0, drama: 1 } },
+                    { text: "Quietly suffer. Assume this is cosmic retribution for my bad deeds.", weight: { slacker: 0, panic: 3, drama: 0 } },
+                    { text: "Make it a dramatic story. Post 5 Threads updates about my trauma.", weight: { slacker: 0, panic: 0, drama: 3 } }
+                ]
+            },
+            {
+                question: "Your boss sends: “Do you have a minute?” on Friday at 5:00 PM. You:",
+                options: [
+                    { text: "Instantly draft a resignation letter. Mentally prepare to pack my bags.", weight: { slacker: 0, panic: 3, drama: 0 } },
+                    { text: "Ignore it. Close the laptop. “A problem for Monday me.”", weight: { slacker: 3, panic: 0, drama: 0 } },
+                    { text: "Call my best friend screaming. “This is the end! Save me!”", weight: { slacker: 0, panic: 1, drama: 3 } }
+                ]
+            },
+            {
+                question: "How do you handle conflict with toxic people?",
+                options: [
+                    { text: "Smile, agree, and immediately format them out of my universe.", weight: { slacker: 3, panic: 0, drama: 0 } },
+                    { text: "Try to explain, feel misunderstood, cry in the shower later.", weight: { slacker: 0, panic: 3, drama: 0 } },
+                    { text: "Match their toxicity. Turn it into a legendary internet fight.", weight: { slacker: 0, panic: 0, drama: 3 } }
+                ]
+            }
+        ],
+        results: {
+            slacker: {
+                name: "The Slacker Saint",
+                stats: { "Divine Chaos": 95, "Ignorance": 99, "Anxiety": 10, "Drama": 20, "Karma": 50 },
+                desc: "<p>Your patron saint is the deity of absolute slacking. Your motto: “If it can be done tomorrow, do it next month.”</p><p>You survive purely on good luck and the fact that you ignore problems until they magically disappear.</p>",
+                fit: "The Panic Pixie",
+                avoid: "Drama Monarch"
+            },
+            panic: {
+                name: "The Panic Pixie",
+                stats: { "Divine Chaos": 70, "Ignorance": 20, "Anxiety": 99, "Drama": 50, "Karma": 80 },
+                desc: "<p>Your patron saint is the deity of health anxiety. You overthink every message and think a mild headache is terminal.</p><p>You need to breathe. Not everyone is plotting your downfall, and your boss is probably just asking for a stapler.</p>",
+                fit: "The Slacker Saint",
+                avoid: "Drama Monarch"
+            },
+            drama: {
+                name: "The Drama Monarch",
+                stats: { "Divine Chaos": 85, "Ignorance": 40, "Anxiety": 60, "Drama": 99, "Karma": 40 },
+                desc: "<p>Your patron saint is the deity of main-character energy. You treat daily minor inconveniences as Shakespearean tragedies.</p><p>Your life is entertaining, but highly exhausting for anyone without popcorn.</p>",
+                fit: "The Slacker Saint",
+                avoid: "The Panic Pixie"
+            }
+        }
+    },
+    "chat": {
+        id: "chat",
+        badge: "💬 Conversation Test",
+        badgeClass: "badge-split",
+        title: "Charismatic Boss or Chat Killer?",
+        desc: "Do people love texting you, or do they mentally prepare themselves before opening your messages?",
+        loadingText: "Scanning texting etiquette...",
+        questions: [
+            {
+                question: "A friend sends a long, emotional paragraph about their breakup. You reply:",
+                options: [
+                    { text: "“Damn, that's crazy.” (And nothing else)", weight: { killer: 3, dry: 1, yap: 0 } },
+                    { text: "Send a 5-minute voice note analyzing their ex's birth chart.", weight: { killer: 0, dry: 0, yap: 3 } },
+                    { text: "“OMG! Let's get drinks tonight. You deserve better!”", weight: { killer: 1, dry: 3, yap: 0 } }
+                ]
+            },
+            {
+                question: "You want to cancel plans last minute. What do you send?",
+                options: [
+                    { text: "“Sorry, too tired. Can't make it.” (Send at the scheduled meeting time)", weight: { killer: 3, dry: 0, yap: 0 } },
+                    { text: "A massive wall of text detailing a fake medical emergency.", weight: { killer: 0, dry: 1, yap: 3 } },
+                    { text: "“Hey! So sorry, I'm super drained today. Let's reschedule next week!”", weight: { killer: 0, dry: 3, yap: 0 } }
+                ]
+            },
+            {
+                question: "Someone replies to your text with just: “Ok”. You think:",
+                options: [
+                    { text: "“Are they mad? Did I ruin our friendship?” (Panic scrolling chat)", weight: { killer: 0, dry: 3, yap: 0 } },
+                    { text: "Don't care. Send 5 unrelated TikTok links.", weight: { killer: 1, dry: 0, yap: 3 } },
+                    { text: "Reply with “Ok” to establish dominance.", weight: { killer: 3, dry: 0, yap: 1 } }
+                ]
+            },
+            {
+                question: "What is your stance on voice notes?",
+                options: [
+                    { text: "Hate them. Send me text or nothing. If you call, I'll block you.", weight: { killer: 3, dry: 1, yap: 0 } },
+                    { text: "Love them. I podcast my thoughts to people on the daily.", weight: { killer: 0, dry: 0, yap: 3 } },
+                    { text: "Only use them when I'm walking and too lazy to type.", weight: { killer: 0, dry: 3, yap: 0 } }
+                ]
+            }
+        ],
+        results: {
+            killer: {
+                name: "The Texting Grim Reaper",
+                stats: { "Chat Killing": 99, "Dryness": 85, "Yapping": 10, "Response Speed": 20, "Emoji Abuse": 5 },
+                desc: "<p>You are where conversations go to die. Your replies of “K”, “lol”, or “damn” have caused emotional damage to many.</p><p>You treat texting as a chore. If someone wants to reach you, they basically need to send a certified letter.</p>",
+                fit: "The Social Butter",
+                avoid: "The Yap Master"
+            },
+            dry: {
+                name: "The Social Butter",
+                stats: { "Chat Killing": 20, "Dryness": 30, "Yapping": 60, "Response Speed": 90, "Emoji Abuse": 80 },
+                desc: "<p>You are a highly functional social texter. You know when to use exclamation marks to not sound angry.</p><p>You keep the vibes immaculate, but it takes a lot of mental energy to maintain this mask.</p>",
+                fit: "The Texting Grim Reaper",
+                avoid: "The Yap Master"
+            },
+            yap: {
+                name: "The Yap Master",
+                stats: { "Chat Killing": 40, "Dryness": 10, "Yapping": 99, "Response Speed": 75, "Emoji Abuse": 65 },
+                desc: "<p>You do not text; you stream of consciousness. Your friends receive paragraphs of text or 3-minute voice notes about nothing.</p><p>You have a lot of thoughts. You need a friend who is a good listener (or just too lazy to reply).</p>",
+                fit: "The Social Butter",
+                avoid: "The Texting Grim Reaper"
+            }
+        }
+    },
+    "love": {
+        id: "love",
+        badge: "💖 Romance Shield",
+        badgeClass: "badge-monster",
+        title: "How Thick is Your Anti-Flirt Shield?",
+        desc: "Are you single by choice, or is your anti-flirt shield thick enough to stop a bullet?",
+        loadingText: "Measuring emotional unavailability...",
+        questions: [
+            {
+                question: "Someone says: “You look really nice today!” You reply:",
+                options: [
+                    { text: "“Thanks, I haven't washed my hair in 4 days.” (Deflect with self-deprecation)", weight: { steel: 3, glass: 1, magnet: 0 } },
+                    { text: "Stare blankly, say “Thank you”, and quickly change the subject.", weight: { steel: 1, glass: 3, magnet: 0 } },
+                    { text: "Smile, look into their eyes, and say “Thanks, you don't look bad either.”", weight: { steel: 0, glass: 0, magnet: 3 } }
+                ]
+            },
+            {
+                question: "Your crush text you: “I had a dream about you last night.” You say:",
+                options: [
+                    { text: "“Hope it wasn't one of those where I fail a test.” (Safety boundary)", weight: { steel: 3, glass: 1, magnet: 0 } },
+                    { text: "“Omg what happened? Tell me!” (Instantly overexcited)", weight: { steel: 0, glass: 0, magnet: 3 } },
+                    { text: "“Haha nice.” (And nothing else, chat dies)", weight: { steel: 1, glass: 3, magnet: 0 } }
+                ]
+            },
+            {
+                question: "On a first date, they ask about your long-term goals. You think:",
+                options: [
+                    { text: "“Is this a job interview? Are they trying to lock me down?” (Panic)", weight: { steel: 3, glass: 1, magnet: 0 } },
+                    { text: "“This is so deep. I love them.” (Already planning the wedding)", weight: { steel: 0, glass: 0, magnet: 3 } },
+                    { text: "Give a polished, safe answer that reveals absolutely nothing.", weight: { steel: 1, glass: 3, magnet: 0 } }
+                ]
+            },
+            {
+                question: "How do you react when someone shows genuine interest in you?",
+                options: [
+                    { text: "Immediately assume they are playing a prank or have terrible taste.", weight: { steel: 3, glass: 1, magnet: 0 } },
+                    { text: "Get intensely obsessed, then get bored 3 days later.", weight: { steel: 0, glass: 0, magnet: 3 } },
+                    { text: "Keep them at a safe distance for 6 months to run background checks.", weight: { steel: 1, glass: 3, magnet: 0 } }
+                ]
+            }
+        ],
+        results: {
+            steel: {
+                name: "The Titanium Bunker",
+                stats: { "Shield Thickness": 99, "Flirt Block": 95, "Vulnerability": 5, "Overthinking": 90, "Obsession": 10 },
+                desc: "<p>Your anti-flirt shield is made of titanium and military-grade concrete. You interpret compliments as threats.</p><p>You are single because you have successfully defended your peace against any potential romance.</p>",
+                fit: "The Hopeless Romantic",
+                avoid: "The Safe Pretender"
+            },
+            glass: {
+                name: "The Safe Pretender",
+                stats: { "Shield Thickness": 70, "Flirt Block": 60, "Vulnerability": 40, "Overthinking": 80, "Obsession": 50 },
+                desc: "<p>You pretend to be open to love, but as soon as someone gets close, you deploy a series of dry texts to scare them away.</p><p>You want a relationship, but only in theory. The reality of sharing your space is terrifying.</p>",
+                fit: "The Titanium Bunker",
+                avoid: "The Hopeless Romantic"
+            },
+            magnet: {
+                name: "The Hopeless Romantic",
+                stats: { "Shield Thickness": 5, "Flirt Block": 10, "Vulnerability": 95, "Overthinking": 70, "Obsession": 99 },
+                desc: "<p>You have zero shield. If someone holds the elevator door for you, you've already named your future children.</p><p>You love being in love, which unfortunately makes you highly vulnerable to red flags.</p>",
+                fit: "The Safe Pretender",
+                avoid: "The Titanium Bunker"
+            }
+        }
+    },
+    "art": {
+        id: "art",
+        badge: "🎨 Art Critic",
+        badgeClass: "badge-deity",
+        title: "Modern Masterpiece or Pure Trash?",
+        desc: "Do you have refined artistic taste, or do you just nod at random paint splatters to look smart?",
+        loadingText: "Evaluating aesthetic snobbery...",
+        questions: [
+            {
+                question: "You see a completely blank canvas in a museum. You say:",
+                options: [
+                    { text: "“This represents the post-capitalist void. Masterpiece.”", weight: { pretender: 3, cynic: 0, goblin: 0 } },
+                    { text: "“My dog could paint this. Actually, my dog has painted this.”", weight: { pretender: 0, cynic: 3, goblin: 1 } },
+                    { text: "Sit in front of it and pretend to cry to look deep.", weight: { pretender: 2, cynic: 0, goblin: 3 } }
+                ]
+            },
+            {
+                question: "Someone asks your opinion on a bizarre, abstract sculpture. You:",
+                options: [
+                    { text: "“It's dynamic. I love how it challenges spatial boundaries.” (Use buzzwords)", weight: { pretender: 3, cynic: 0, goblin: 0 } },
+                    { text: "“Looks like a crumpled beer can. Let's get lunch.”", weight: { pretender: 0, cynic: 3, goblin: 0 } },
+                    { text: "Take a selfie with it, post it on IG: “Art makes me feel alive.”", weight: { pretender: 1, cynic: 0, goblin: 3 } }
+                ]
+            },
+            {
+                question: "What is your idea of 'interior design' for your room?",
+                options: [
+                    { text: "Carefully placed mid-century modern furniture that is very uncomfortable.", weight: { pretender: 3, cynic: 1, goblin: 0 } },
+                    { text: "A bed, a desk, and a chair. If it works, it works.", weight: { pretender: 0, cynic: 3, goblin: 0 } },
+                    { text: "Absolute clutter. Floor is just a giant shelf. Goblin energy.", weight: { pretender: 0, cynic: 0, goblin: 3 } }
+                ]
+            },
+            {
+                question: "You are invited to a silent experimental movie screening. You:",
+                options: [
+                    { text: "Attend, fall asleep, and write a review about the “existential silence”.", weight: { pretender: 3, cynic: 0, goblin: 0 } },
+                    { text: "Decline. I'd rather watch paint dry (and not call it art).", weight: { pretender: 0, cynic: 3, goblin: 0 } },
+                    { text: "Attend, make weird noises to see if anyone thinks it's part of the show.", weight: { pretender: 0, cynic: 0, goblin: 3 } }
+                ]
+            }
+        ],
+        results: {
+            pretender: {
+                name: "The Aesthetic Pretender",
+                stats: { "Pretension": 99, "Sincerity": 10, "Buzzwords": 95, "Pragmatism": 20, "Chaos": 40 },
+                desc: "<p>You use words like 'liminal', 'dichotomy', and 'visceral' daily. You care deeply about looking like an intellectual.</p><p>You are terrified of someone asking you what an artwork actually means, so you just keep nodding.</p>",
+                fit: "The Goblin Gremlin",
+                avoid: "The No-Nonsense Cynic"
+            },
+            cynic: {
+                name: "The No-Nonsense Cynic",
+                stats: { "Pretension": 5, "Sincerity": 95, "Buzzwords": 5, "Pragmatism": 99, "Chaos": 10 },
+                desc: "<p>You have zero tolerance for artistic BS. If it looks like trash, you call it trash.</p><p>Your pragmatism is refreshing, but you are extremely boring to take to art galleries.</p>",
+                fit: "The Aesthetic Pretender",
+                avoid: "The Goblin Gremlin"
+            },
+            goblin: {
+                name: "The Goblin Gremlin",
+                stats: { "Pretension": 30, "Sincerity": 60, "Buzzwords": 20, "Pragmatism": 30, "Chaos": 99 },
+                desc: "<p>You live in absolute, chaotic aesthetic clutter. You find beauty in a pile of laundry or a weirdly shaped potato.</p><p>You don't care about rules. You are the embodiment of pure, unhinged self-expression.</p>",
+                fit: "The Aesthetic Pretender",
+                avoid: "The No-Nonsense Cynic"
+            }
+        }
+    },
+    "fish": {
+        id: "fish",
+        badge: "🐟 Slack King",
+        badgeClass: "badge-monster",
+        title: "Your Slacker Philosophy Level",
+        desc: "Are you a hard worker, or is your slacking game so refined it qualifies as a spiritual practice?",
+        loadingText: "Calculating quiet quitting efficiency...",
+        questions: [
+            {
+                question: "Your computer is taking 5 mins to update at work. You:",
+                options: [
+                    { text: "Go to the bathroom and sit on the toilet for 20 minutes scrolling TikTok.", weight: { master: 3, basic: 1, work: 0 } },
+                    { text: "Stare at the screen anxiously. “Oh no, I'm wasting company time.”", weight: { master: 0, basic: 0, work: 3 } },
+                    { text: "Go chat with 3 different departments to spread gossip.", weight: { master: 1, basic: 3, work: 0 } }
+                ]
+            },
+            {
+                question: "You are given a task that takes 1 hour, but has a 1-week deadline. You:",
+                options: [
+                    { text: "Finish it in 1 hour. Do nothing for the next 4.9 days.", weight: { master: 3, basic: 1, work: 0 } },
+                    { text: "Finish it immediately and ask for more work. (Job-promotion behavior)", weight: { master: 0, basic: 0, work: 3 } },
+                    { text: "Procrastinate until the last 2 hours of the week, panic, and submit.", weight: { master: 1, basic: 3, work: 0 } }
+                ]
+            },
+            {
+                question: "What is your primary method of looking 'busy'?",
+                options: [
+                    { text: "Open a massive Excel sheet and sigh loudly every 10 minutes.", weight: { master: 3, basic: 1, work: 0 } },
+                    { text: "Actually do my work. I have nothing to hide.", weight: { master: 0, basic: 0, work: 3 } },
+                    { text: "Walk around the office carrying a single piece of paper with a serious face.", weight: { master: 2, basic: 3, work: 0 } }
+                ]
+            },
+            {
+                question: "Your boss asks for a status update on a project you haven't started. You reply:",
+                options: [
+                    { text: "“I'm currently compiling the initial data structure to optimize delivery.”", weight: { master: 3, basic: 1, work: 0 } },
+                    { text: "“I'm so sorry, I haven't started. I will do it now!” (Cry)", weight: { master: 0, basic: 0, work: 3 } },
+                    { text: "“Almost done! Just putting on the final touches.” (And then do it in 5 mins)", weight: { master: 1, basic: 3, work: 0 } }
+                ]
+            }
+        ],
+        results: {
+            master: {
+                name: "The Quiet Quitting Zen Master",
+                stats: { "Quiet Quitting": 99, "Busy Acting": 95, "Stress level": 5, "Productivity": 10, "Office Gossips": 30 },
+                desc: "<p>You have reached enlightenment. You get paid to exist. You know exactly which toilet cubicle has the best Wi-Fi.</p><p>You are a corporate ninja. You leave no trace of actual work, yet nobody can fire you.</p>",
+                fit: "The Office Nomad",
+                avoid: "The Hustle Martyr"
+            },
+            basic: {
+                name: "The Office Nomad",
+                stats: { "Quiet Quitting": 70, "Busy Acting": 80, "Stress level": 40, "Productivity": 50, "Office Gossips": 90 },
+                desc: "<p>You slack, but you worry about it. You spread gossip to pass the time and take long coffee breaks.</p><p>You need to relax. If you're going to slack, commit to the peace of mind.</p>",
+                fit: "The Quiet Quitting Zen Master",
+                avoid: "The Hustle Martyr"
+            },
+            work: {
+                name: "The Hustle Martyr",
+                stats: { "Quiet Quitting": 5, "Busy Acting": 5, "Stress level": 95, "Productivity": 99, "Office Gossips": 10 },
+                desc: "<p>You are the reason companies make record profits. You work overtime for free and worry about company targets.</p><p>Please close your laptop. The company will survive without you, but your sanity might not.</p>",
+                fit: "The Office Nomad",
+                avoid: "The Quiet Quitting Zen Master"
+            }
+        }
+    },
+    "rich": {
+        id: "rich",
+        badge: "💸 Financial Vibe",
+        badgeClass: "badge-split",
+        title: "Delusional Rich or Spiritual Investor?",
+        desc: "Do you spend money like a millionaire while ignoring your empty bank account?",
+        loadingText: "Calculating credit card debt trajectory...",
+        questions: [
+            {
+                question: "You see an item for $100 with $10 shipping. You:",
+                options: [
+                    { text: "Add $50 of random trash to cart to get 'free shipping'. (Save money!)", weight: { postage: 3, blind: 0, spirit: 0 } },
+                    { text: "Close tab. $10 shipping is highway robbery.", weight: { postage: 1, blind: 3, spirit: 0 } },
+                    { text: "Buy it anyway. Money is just a social construct.", weight: { postage: 0, blind: 0, spirit: 3 } }
+                ]
+            },
+            {
+                question: "How do you handle your bank account balance?",
+                options: [
+                    { text: "If I don't look at my balance, I am technically infinite rich. (Delusional)", weight: { postage: 0, blind: 3, spirit: 0 } },
+                    { text: "Check it daily, cry, then buy a $7 latte to cheer myself up.", weight: { postage: 3, blind: 0, spirit: 1 } },
+                    { text: "Check it only when my card gets declined.", weight: { postage: 1, blind: 1, spirit: 3 } }
+                ]
+            },
+            {
+                question: "You buy a $150 online course that you never open. You tell yourself:",
+                options: [
+                    { text: "“By paying for it, I've already consumed the knowledge spiritually.”", weight: { postage: 0, blind: 1, spirit: 3 } },
+                    { text: "“I'll start it next Monday.” (And never do)", weight: { postage: 3, blind: 0, spirit: 0 } },
+                    { text: "Ignore the guilt. I bought the 'vibes' of being a productive person.", weight: { postage: 1, blind: 3, spirit: 1 } }
+                ]
+            },
+            {
+                question: "What is your primary investment strategy?",
+                options: [
+                    { text: "Buying lottery tickets and manifesting wealth through meditation.", weight: { postage: 0, blind: 1, spirit: 3 } },
+                    { text: "Hoping my parents have a secret inheritance they haven't told me about.", weight: { postage: 1, blind: 3, spirit: 0 } },
+                    { text: "Buying aesthetic things that I cannot afford to look rich.", weight: { postage: 3, blind: 0, spirit: 1 } }
+                ]
+            }
+        ],
+        results: {
+            postage: {
+                name: "The Shipping Fee Assassin",
+                stats: { "Delusional Wealth": 70, "Guilt Defense": 80, "Small Savings": 95, "Big Spending": 90, "Financial IQ": 40 },
+                desc: "<p>You will buy a $50 coffee without blinking, but refuse to buy a $3 App. You spend more money just to get free shipping.</p><p>You are a master of micro-economy, but your macro-finances are in absolute shambles.</p>",
+                fit: "The Delusional Rich",
+                avoid: "Spiritual Investor"
+            },
+            blind: {
+                name: "The Delusional Rich",
+                stats: { "Delusional Wealth": 99, "Guilt Defense": 95, "Small Savings": 20, "Big Spending": 95, "Financial IQ": 10 },
+                desc: "<p>You live in a state of financial quantum superposition. If you don't check your balance, you are both rich and poor.</p><p>You buy things using Apple Pay because it feels like using fake points rather than real money.</p>",
+                fit: "Spiritual Investor",
+                avoid: "The Shipping Fee Assassin"
+            },
+            spirit: {
+                name: "The Spiritual Investor",
+                stats: { "Delusional Wealth": 85, "Guilt Defense": 90, "Small Savings": 40, "Big Spending": 80, "Financial IQ": 50 },
+                desc: "<p>You buy gym memberships, books, and courses to feel like a better person. You consume the 'vibe' of self-improvement.</p><p>Your room is full of dusty self-help books, but your soul is incredibly enriched (or so you tell yourself).</p>",
+                fit: "The Delusional Rich",
+                avoid: "The Shipping Fee Assassin"
+            }
+        }
+    },
+    "health": {
+        id: "health",
+        badge: "💊 Punk Wellness",
+        badgeClass: "badge-monster",
+        title: "Your Punk-Wellness Level",
+        desc: "Do you take liver supplements with your tequila? Discover how you pull off chaotic health choices!",
+        loadingText: "Analyzing cellular decay velocity...",
+        questions: [
+            {
+                question: "It's 3:00 AM, you are scrolling TikTok. You feel health anxiety. You:",
+                options: [
+                    { text: "Take 2 Lutien capsules and a Vitamin B with warm water, then scroll for 1 more hour.", weight: { pill: 3, zero: 0, mind: 0 } },
+                    { text: "Tell myself “I will drink sugar-free tea tomorrow to detox this night.”", weight: { pill: 0, zero: 3, mind: 0 } },
+                    { text: "Bookmark a '10-minute eye yoga' video on TikTok, and feel instantly cured.", weight: { pill: 0, zero: 0, mind: 3 } }
+                ]
+            },
+            {
+                question: "You are eating a massive, greasy fried chicken dinner. What is your drink?",
+                options: [
+                    { text: "A Coke Zero. Zero sugar means the meal has zero calories. Heat-conservation law.", weight: { pill: 0, zero: 3, mind: 0 } },
+                    { text: "A hot green tea to wash away the oil instantly.", weight: { pill: 1, zero: 1, mind: 1 } },
+                    { text: "Whatever, but I'll bookmark a green juice recipe later.", weight: { pill: 0, zero: 0, mind: 3 } }
+                ]
+            },
+            {
+                question: "How do you manage your daily supplements?",
+                options: [
+                    { text: "I take 8 different pills (multivitamin, fish oil, zinc, etc.) to survive my terrible habits.", weight: { pill: 3, zero: 1, mind: 0 } },
+                    { text: "Only take them after a wild night out to 'save' my liver.", weight: { pill: 1, zero: 3, mind: 0 } },
+                    { text: "Bought a giant bottle, kept it on desk, look at it daily to absorb energy.", weight: { pill: 0, zero: 0, mind: 3 } }
+                ]
+            },
+            {
+                question: "What is your ultimate wellness philosophy?",
+                options: [
+                    { text: "Living in a dynamic balance of extreme damage and extreme repair.", weight: { pill: 3, zero: 1, mind: 1 } },
+                    { text: "Calorie offset. As long as I drink water, the junk food doesn't count.", weight: { pill: 0, zero: 3, mind: 0 } },
+                    { text: "Bookmarking workouts is equivalent to doing them.", weight: { pill: 0, zero: 0, mind: 3 } }
+                ]
+            }
+        ],
+        results: {
+            pill: {
+                name: "The Pill Popper Immortal",
+                stats: { "Self Damage": 99, "Pill Defense": 90, "Mind Wellness": 40, "Sleep Debt": 95, "Detox Power": 80 },
+                desc: "<p>You use the most expensive eye creams to support your 4 AM doomscrolling habit. You take 5 supplements to survive on 4 hours of sleep.</p><p>You live in a constant state of biological warfare with yourself. You are technically immortal through supplements.</p>",
+                fit: "The Calorie Offset Master",
+                avoid: "Mind Yoga Slacker"
+            },
+            zero: {
+                name: "The Calorie Offset Master",
+                stats: { "Self Damage": 75, "Pill Defense": 50, "Mind Wellness": 50, "Sleep Debt": 75, "Detox Power": 99 },
+                desc: "<p>You eat a triple cheeseburger with a Diet Coke because you honestly believe they cancel each other out.</p><p>You are a mathematical genius of self-deception. If you walk 20 steps, you feel justified to eat a whole pizza.</p>",
+                fit: "The Pill Popper Immortal",
+                avoid: "Mind Yoga Slacker"
+            },
+            mind: {
+                name: "Mind Yoga Slacker",
+                stats: { "Self Damage": 60, "Pill Defense": 30, "Mind Wellness": 99, "Sleep Debt": 80, "Detox Power": 40 },
+                desc: "<p>Your health exists entirely in your social media bookmarks. You have 300 workout videos saved, but your only exercise is scrolling.</p><p>You believe in spiritual health. As long as your vibes are good, your cells will automatically heal.</p>",
+                fit: "The Calorie Offset Master",
+                avoid: "The Pill Popper Immortal"
+            }
+        }
+    }
+}
+        };
+        let currentLang = localStorage.getItem('funquiz_lang') || 'zh';
+        let quizzes = allQuizzes[currentLang];
+
+        const uiTranslations = {
+            zh: {
+                subtitle: "當代發瘋與靈魂狀態大解析",
+                hubLegal: "本測驗純屬娛樂性質，不具備任何專業心理學或醫療診斷依據。我們嚴格保護您的隱私，100% 零個資收集，請放心體驗。",
+                btnStart: "開始召喚儀式 ✨",
+                btnBackHub: "返回測驗大廳",
+                loadingTextDefault: "靈魂深處解析中...",
+                resultTitle: "您的測驗結果為",
+                matchTypeFit: "🤝 合得來的夥伴",
+                matchTypeAvoid: "⚡ 需避開的宿敵",
+                shareBtn: "分享",
+                resultLegalNotice: "測驗為純娛樂性質，複製成果即可至 Threads / IG 限動發文！",
+                wishTitle: "💡 意見反饋與許願",
+                feedbackLabel: "類別",
+                contentLabel: "內容 (限 200 字)",
+                placeholderFeedback: "寫下你的想法...",
+                anonymousSubmit: "匿名送出",
+                bugOption: "🐛 系統 Bug 回報",
+                wishOption: "🔮 許願測驗主題",
+                footerBug: "回報 Bug",
+                footerWish: "許願測驗主題",
+                footerPrefix1: "系統破防了？👉 ",
+                footerPrefix2: " ｜ 腦袋有新梗？👉 ",
+                votedToast: "⚠️ 您已經對此測驗表過態囉！",
+                voteUpToast: "👍 感謝點讚！您的加持已被接收！",
+                voteDownToast: "👎 踩得好！我們會繼續毒舌發瘋！",
+                comingSoonToast: "🔮 靈魂儀式正在籌備中，敬請期待！",
+                feedbackSuccessToast: "🎉 收到！感謝你的匿名回報！",
+                feedbackFailToast: "❌ 傳送失敗：",
+                networkErrorToast: "❌ 網路異常，請稍後再試！",
+                shareCopiedToast: "📋 測驗結果與專屬連結已複製！快去 Threads / IG 自嘲發文吧！🚀",
+                shareTextTemplate: (title, name) => `🧠 心理測驗【${title}】檢測完畢！\n我測出的狀態是「${name}」，這真的太寫實了！\n快來召喚你的擺爛守護神/內耗怪獸：`
+            },
+            en: {
+                subtitle: "Decode your chaotic soul and modern mental state",
+                hubLegal: "This quiz is strictly for entertainment purposes and does not represent professional psychological or medical advice. We strictly protect your privacy with 100% anonymous data handling.",
+                btnStart: "Start Ritual ✨",
+                btnBackHub: "Back to Hub",
+                loadingTextDefault: "Decoding your inner soul...",
+                resultTitle: "Your diagnosis is",
+                matchTypeFit: "🤝 Best Match",
+                matchTypeAvoid: "⚡ Avoid At All Costs",
+                shareBtn: "Share",
+                resultLegalNotice: "Purely for fun! Copy the result and post it on Threads / IG stories!",
+                wishTitle: "💡 Feedback & Wishes",
+                feedbackLabel: "Category",
+                contentLabel: "Content (Max 200 chars)",
+                placeholderFeedback: "Tell us what you think...",
+                anonymousSubmit: "Submit",
+                bugOption: "🐛 System Bug Report",
+                wishOption: "🔮 Wish Next Quiz Theme",
+                footerBug: "Report Bug",
+                footerWish: "Wish a Theme",
+                footerPrefix1: "System boomed? 👉 ",
+                footerPrefix2: " | Got fresh ideas? 👉 ",
+                votedToast: "⚠️ You have already voted for this quiz!",
+                voteUpToast: "👍 Upvoted! Your positive vibes have been received!",
+                voteDownToast: "👎 Downvoted! We will continue to be toxic & unhinged!",
+                comingSoonToast: "🔮 Soul ritual is in preparation, please look forward to it!",
+                feedbackSuccessToast: "🎉 Submitted! Thank you for your anonymous feedback!",
+                feedbackFailToast: "❌ Submission failed: ",
+                networkErrorToast: "❌ Network error, please try again later!",
+                shareCopiedToast: "📋 Result and link copied to clipboard! Go post it on Threads / IG stories! 🚀",
+                shareTextTemplate: (title, name) => `🧠 Personality Quiz [${title}] Completed!\nI got: "${name}". This is too real!\nTake your test here: `
+            }
+        };
+
+        function updateStaticTranslations() {
+            const t = uiTranslations[currentLang];
+            
+            document.getElementById('platformSubtitle').textContent = t.subtitle;
+            document.getElementById('hubLegalNotice').textContent = t.hubLegal;
+            
+            document.getElementById('btnStartQuiz').textContent = t.btnStart;
+            document.getElementById('btnBackHub1').textContent = t.btnBackHub;
+            
+            if (activeQuiz) {
+                document.getElementById('loadingText').textContent = activeQuiz.loadingText || t.loadingTextDefault;
+            } else {
+                document.getElementById('loadingText').textContent = t.loadingTextDefault;
+            }
+            
+            document.getElementById('resultTitle').textContent = t.resultTitle;
+            document.getElementById('matchTypeFit').textContent = t.matchTypeFit;
+            document.getElementById('matchTypeAvoid').textContent = t.matchTypeAvoid;
+            document.getElementById('btnShare').innerHTML = `
+                <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 12.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
+                </svg>\${t.shareBtn}
+            `;
+            document.getElementById('btnBackHub2').textContent = t.btnBackHub;
+            document.getElementById('resultLegalNotice').textContent = t.resultLegalNotice;
+            
+            document.getElementById('feedbackTitle').textContent = t.wishTitle;
+            document.querySelector('label[for="feedbackType"]').textContent = t.feedbackLabel;
+            document.querySelector('label[for="feedbackContent"]').textContent = t.contentLabel;
+            document.getElementById('feedbackContent').placeholder = t.placeholderFeedback;
+            document.getElementById('btnSubmitFeedback').textContent = t.anonymousSubmit;
+            
+            const optWish = document.querySelector('option[value="wish"]');
+            const optBug = document.querySelector('option[value="bug"]');
+            if (optWish) optWish.textContent = t.wishOption;
+            if (optBug) optBug.textContent = t.bugOption;
+            
+            const footerP = document.querySelector('.quiz-footer p');
+            if (footerP) {
+                footerP.innerHTML = `${t.footerPrefix1}<a href="#" id="btn-report-bug">${t.footerBug}</a>${t.footerPrefix2}<a href="#" id="btn-wish-theme">${t.footerWish}</a>`;
+                bindFeedbackEvents();
+            }
+
+            document.getElementById('lang-btn-zh').classList.toggle('active', currentLang === 'zh');
+            document.getElementById('lang-btn-en').classList.toggle('active', currentLang === 'en');
+        }
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('funquiz_lang', lang);
+            quizzes = allQuizzes[currentLang];
+            
+            updateStaticTranslations();
+            renderQuizHub();
+            handleRouting();
+        }
 
         // ================= 遊戲狀態 =================
         let activeQuiz = null;
@@ -1791,6 +2564,7 @@
 
         // ================= 初始加載 =================
         window.addEventListener('DOMContentLoaded', () => {
+            updateStaticTranslations();
             renderQuizHub();
             handleRouting();
             window.addEventListener('hashchange', handleRouting);
@@ -1871,7 +2645,7 @@
             const storageKey = `voted_${quizId}`;
             const hasVoted = localStorage.getItem(storageKey);
             if (hasVoted) {
-                showToast("⚠️ 您已經對此測驗表過態囉！");
+                showToast(uiTranslations[currentLang].votedToast);
                 return;
             }
 
@@ -1881,7 +2655,7 @@
             localStorage.setItem(storageKey, type);
             renderQuizHub();
 
-            showToast(type === 'up' ? "👍 感謝點讚！您的加持已被接收！" : "👎 踩得好！我們會繼續毒舌發瘋！");
+            showToast(type === 'up' ? uiTranslations[currentLang].voteUpToast : uiTranslations[currentLang].voteDownToast);
 
             try {
                 const res = await fetch('/api/votes', {
@@ -1994,7 +2768,7 @@
         function navigateToQuiz(quizId) {
             const q = quizzes[quizId];
             if (q.comingSoon) {
-                showToast("🔮 靈魂儀式正在籌備中，敬請期待！");
+                showToast(uiTranslations[currentLang].comingSoonToast);
                 return;
             }
             window.location.hash = quizId;
@@ -2032,23 +2806,35 @@
             }, 300);
         }
 
-        btnReportBug.addEventListener('click', (e) => {
-            e.preventDefault();
-            openModal('bug');
-        });
-
-        btnWishTheme.addEventListener('click', (e) => {
-            e.preventDefault();
-            openModal('wish');
-        });
-
-        closeFeedback.addEventListener('click', closeModal);
-
-        feedbackModal.addEventListener('click', (e) => {
-            if (e.target === feedbackModal) {
-                closeModal();
+        function bindFeedbackEvents() {
+            const btnReportBug = document.getElementById('btn-report-bug');
+            const btnWishTheme = document.getElementById('btn-wish-theme');
+            
+            if (btnReportBug) {
+                btnReportBug.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openModal('bug');
+                });
             }
-        });
+            if (btnWishTheme) {
+                btnWishTheme.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openModal('wish');
+                });
+            }
+        }
+
+        if (closeFeedback) {
+            closeFeedback.addEventListener('click', closeModal);
+        }
+
+        if (feedbackModal) {
+            feedbackModal.addEventListener('click', (e) => {
+                if (e.target === feedbackModal) {
+                    closeModal();
+                }
+            });
+        }
 
         feedbackForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -2073,14 +2859,14 @@
                 const data = await response.json();
                 
                 if (response.ok && data.success) {
-                    showToast('🎉 收到！感謝你的匿名回報！');
+                    showToast(uiTranslations[currentLang].feedbackSuccessToast);
                     closeModal();
                 } else {
-                    showToast('❌ 傳送失敗：' + (data.error || '未知錯誤'));
+                    showToast(uiTranslations[currentLang].feedbackFailToast + (data.error || '未知錯誤'));
                 }
             } catch (err) {
                 console.error(err);
-                showToast('❌ 網路異常，請稍後再試！');
+                showToast(uiTranslations[currentLang].networkErrorToast);
             } finally {
                 btnSubmitFeedback.disabled = false;
                 btnSubmitFeedback.textContent = '匿名送出';
@@ -2222,7 +3008,7 @@
             matchAvoid.innerText = result.avoid;
 
             btnShare.onclick = async () => {
-                const text = `🧠 心理測驗【${activeQuiz.title}】檢測完畢！\n我測出的狀態是「${result.name}」，這真的太寫實了！\n快來召喚你的擺爛守護神/內耗怪獸：`;
+                const text = uiTranslations[currentLang].shareTextTemplate(activeQuiz.title, result.name);
                 const url = `${window.location.origin}${window.location.pathname}#${activeQuiz.id}`;
                 const shareData = {
                     title: `Fun Quizzes`,
@@ -2252,7 +3038,7 @@
             dummy.select();
             document.execCommand('copy');
             document.body.removeChild(dummy);
-            alert('測驗結果與專屬連結已複製到剪貼簿！快去 Threads / IG 自嘲發文吧！🚀');
+            showToast(uiTranslations[currentLang].shareCopiedToast);
         }
 
         // ================= 動態雷達圖繪製 =================
