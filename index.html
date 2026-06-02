@@ -1001,8 +1001,7 @@
     <div class="container">
         <!-- 語言切換按鈕 -->
         <div class="lang-switcher">
-            <button class="lang-btn active" id="lang-btn-zh" onclick="switchLanguage('zh')">繁中</button>
-            <button class="lang-btn" id="lang-btn-en" onclick="switchLanguage('en')">EN</button>
+            <button class="lang-btn" id="lang-toggle-btn" onclick="toggleLanguage()">EN</button>
         </div>
         
         <!-- 平台 Logo -->
@@ -2436,8 +2435,17 @@
                 feedbackSuccessToast: "🎉 收到！感謝你的匿名回報！",
                 feedbackFailToast: "❌ 傳送失敗：",
                 networkErrorToast: "❌ 網路異常，請稍後再試！",
-                shareCopiedToast: "📋 測驗結果與專屬連結已複製！快去 Threads / IG 自嘲發文吧！🚀",
-                shareTextTemplate: (title, name) => `🧠 心理測驗【${title}】檢測完畢！\n我測出的狀態是「${name}」，這真的太寫實了！\n快來召喚你的擺爛守護神/內耗怪獸：`
+                shareCopiedToast: "📋 測驗結果與專專屬連結已複製！快去 Threads / IG 自嘲發文吧！🚀",
+                shareTextTemplate: (title, name) => `🧠 心理測驗【${title}】檢測完畢！\n我測出的狀態是「${name}」，這真的太寫實了！\n快來召喚你的擺爛守護神/內耗怪獸：`,
+                rank1: "🥇 網民推爆",
+                rank2: "🥈 人氣竄升",
+                rank3: "🥉 熱門推薦",
+                hotGod: "🙌 全體起立",
+                hotGlass: "🤡 脆友破防",
+                hotFight: "⚔️ 兩極大戰",
+                preparing: "🔮 儀式籌備中...",
+                playBtnText: "開始召喚",
+                comingSoonText: "即將上線"
             },
             en: {
                 subtitle: "Decode your chaotic soul and modern mental state",
@@ -2469,7 +2477,16 @@
                 feedbackFailToast: "❌ Submission failed: ",
                 networkErrorToast: "❌ Network error, please try again later!",
                 shareCopiedToast: "📋 Result and link copied to clipboard! Go post it on Threads / IG stories! 🚀",
-                shareTextTemplate: (title, name) => `🧠 Personality Quiz [${title}] Completed!\nI got: "${name}". This is too real!\nTake your test here: `
+                shareTextTemplate: (title, name) => `🧠 Personality Quiz [${title}] Completed!\nI got: "${name}". This is too real!\nTake your test here: `,
+                rank1: "🥇 Viral Hit",
+                rank2: "🥈 Rising Fast",
+                rank3: "🥉 Hot Pick",
+                hotGod: "🙌 Standing Ovation",
+                hotGlass: "🤡 Boomed!",
+                hotFight: "⚔️ Toxic War",
+                preparing: "🔮 Launching Soon...",
+                playBtnText: "Start Quiz",
+                comingSoonText: "Coming Soon"
             }
         };
 
@@ -2494,7 +2511,7 @@
             document.getElementById('btnShare').innerHTML = `
                 <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
                     <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 12.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
-                </svg>\${t.shareBtn}
+                </svg>${t.shareBtn}
             `;
             document.getElementById('btnBackHub2').textContent = t.btnBackHub;
             document.getElementById('resultLegalNotice').textContent = t.resultLegalNotice;
@@ -2516,8 +2533,10 @@
                 bindFeedbackEvents();
             }
 
-            document.getElementById('lang-btn-zh').classList.toggle('active', currentLang === 'zh');
-            document.getElementById('lang-btn-en').classList.toggle('active', currentLang === 'en');
+            const toggleBtn = document.getElementById('lang-toggle-btn');
+            if (toggleBtn) {
+                toggleBtn.textContent = currentLang === 'zh' ? 'EN' : '繁中';
+            }
         }
 
         function switchLanguage(lang) {
@@ -2528,6 +2547,11 @@
             updateStaticTranslations();
             renderQuizHub();
             handleRouting();
+        }
+
+        function toggleLanguage() {
+            const nextLang = currentLang === 'zh' ? 'en' : 'zh';
+            switchLanguage(nextLang);
         }
 
         // ================= 遊戲狀態 =================
@@ -2708,22 +2732,22 @@
                 let rankHtml = '';
                 if (top3.includes(q.id)) {
                     const rankIdx = top3.indexOf(q.id) + 1;
-                    const rankEmoji = rankIdx === 1 ? '🥇 網民推爆' : rankIdx === 2 ? '🥈 人氣竄升' : '🥉 熱門推薦';
+                    const rankEmoji = rankIdx === 1 ? uiTranslations[currentLang].rank1 : rankIdx === 2 ? uiTranslations[currentLang].rank2 : uiTranslations[currentLang].rank3;
                     rankHtml = `<span class="rank-badge rank-${rankIdx}">${rankEmoji}</span>`;
                 }
 
                 // 依讚踩比率產生的荒謬動態徽章
                 let hotLabelHtml = '';
                 if (upVotes > downVotes * 3 && upVotes > 50) {
-                    hotLabelHtml = `<span class="hot-label god">🙌 全體起立</span>`;
+                    hotLabelHtml = `<span class="hot-label god">${uiTranslations[currentLang].hotGod}</span>`;
                 } else if (downVotes > upVotes && downVotes > 20) {
-                    hotLabelHtml = `<span class="hot-label glass">🤡 脆友破防</span>`;
+                    hotLabelHtml = `<span class="hot-label glass">${uiTranslations[currentLang].hotGlass}</span>`;
                 } else if (upVotes > 20 && downVotes > 20 && Math.abs(upVotes - downVotes) / Math.max(upVotes, 1) < 0.2) {
-                    hotLabelHtml = `<span class="hot-label fight">⚔️ 兩極大戰</span>`;
+                    hotLabelHtml = `<span class="hot-label fight">${uiTranslations[currentLang].hotFight}</span>`;
                 }
 
                 const cardClass = q.comingSoon ? 'quiz-select-card card-coming-soon' : 'quiz-select-card';
-                const comingHtml = q.comingSoon ? `<span style="font-size:11px;color:var(--text-muted);font-weight:bold;">🔮 儀式籌備中...</span>` : '';
+                const comingHtml = q.comingSoon ? `<span style="font-size:11px;color:var(--text-muted);font-weight:bold;">${uiTranslations[currentLang].preparing}</span>` : '';
 
                 return `
                     <div class="${cardClass}" onclick="navigateToQuiz('${q.id}')">
@@ -2740,14 +2764,14 @@
                         
                         ${!q.comingSoon ? `
                         <div class="play-btn">
-                            開始召喚 
+                            ${uiTranslations[currentLang].playBtnText} 
                             <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
                                 <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
                             </svg>
                         </div>
                         ` : `
                         <div style="font-size: 13px; font-weight: 800; color: var(--text-muted); margin-top: auto; display: flex; align-items: center; gap: 4px;">
-                            即將上線
+                            ${uiTranslations[currentLang].comingSoonText}
                         </div>
                         `}
 
