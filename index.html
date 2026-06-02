@@ -961,14 +961,22 @@
             gap: 8px;
             z-index: 1000;
         }
-        /* 手機端 RWD 適配：防與標題重疊 */
+        /* 手機端 RWD 適配：移至標題下方右側，防重疊 */
         @media (max-width: 480px) {
+            header {
+                order: 1;
+                margin-bottom: 12px;
+            }
             .lang-switcher {
                 position: relative;
                 top: 0;
                 right: 0;
-                margin: -10px auto 16px auto;
-                justify-content: center;
+                order: 2;
+                margin: 0 0 16px auto; /* 靠右對齊 */
+                justify-content: flex-end;
+            }
+            #view-hub, #view-cover, #view-quiz, #view-loading, #view-result {
+                order: 3;
             }
         }
         .lang-btn {
