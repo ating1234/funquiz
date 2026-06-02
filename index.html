@@ -961,6 +961,16 @@
             gap: 8px;
             z-index: 1000;
         }
+        /* 手機端 RWD 適配：防與標題重疊 */
+        @media (max-width: 480px) {
+            .lang-switcher {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin: -10px auto 16px auto;
+                justify-content: center;
+            }
+        }
         .lang-btn {
             background: #4f46e5;
             border: 1.5px solid #4f46e5;
