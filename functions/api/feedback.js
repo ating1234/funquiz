@@ -57,6 +57,49 @@ export async function onRequestPost(context) {
         // 寫入 KV
         await env.VOTES.put("quiz_feedbacks", JSON.stringify(trimmedFeedbacks));
         
+        // --- 對接到 bug-center (集中式 Bug 回報中心) ---
+        const bugCenterUrl = env.BUG_CENTER_URL;
+        const bugCenterApiKey = env.BUG_CENTER_API_KEY;
+        
+        if (bugCenterUrl) {
+            const title = type === 'bug' ? "【Bug】系統破防了" : "【許願】腦袋有新梗";
+            const targetUrl = `${bugCenterUrl.replace(/\/$/, "")}/api/reports`;
+            
+            const forwardPromise = fetch(targetUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Bug-API-Key": (bugCenterApiKey || "").trim(),
+                    "User-Agent": request.headers.get("user-agent") || "Cloudflare-Pages-Function"
+                },
+                body: JSON.stringify({
+                    app_name: "FunQuiz",
+                    title: title,
+                    description: content.trim(),
+                    email: "",
+                    meta: {
+                        type,
+                        client_ua: request.headers.get("user-agent")
+                    }
+                })
+            }).then(async (res) => {
+                if (!res.ok) {
+                    const errText = await res.text().catch(() => "");
+                    console.error(`Forwarding to bug-center failed (status: ${res.status}): ${errText}`);
+                }
+            }).catch(err => {
+                console.error("Error forwarding to bug-center:", err);
+            });
+
+            if (context.waitUntil) {
+                context.waitUntil(forwardPromise);
+            } else {
+                // 本地開發無 waitUntil 時阻塞等待
+                await forwardPromise;
+            }
+        }
+        // ---------------------------------------------
+
         return new Response(JSON.stringify({ success: true }), {
             headers: { 
                 "Content-Type": "application/json",
